@@ -36,7 +36,6 @@ const App = () => {
 
   const LoadMoreRandomData = () => {
     setPage(page + 1)
-    LoadRandomData()
   }
 
 
@@ -56,6 +55,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    LoadRandomData()
   }, [page]);
 
 
