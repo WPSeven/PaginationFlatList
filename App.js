@@ -1,49 +1,47 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useContext } from "react";
 import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
   View,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Button,
   Text,
-  StatusBar,
+  Dimensions,
   FlatList,
-  TouchableOpacity,
   Image
-} from 'react-native';
+} from "react-native";
 
 
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: true,
-      randomUserData: [],
-      loadingExtraData: false,
-      page: 1
-    }
-  }
+const App = () => {
 
 
-  LoadRandomData = () => {
-    fetch(`https://randomuser.me/api/?results=10&page=${this.state.page}`).
+  const [loading, setLoading] = useState(true);
+  const [randomUserData, setRandomUserData] = useState([]);
+  const [loadingExtraData, setLoadingExtraData] = useState(false);
+  const [page, setPage] = useState(0);
+
+
+
+  const LoadRandomData = () => {
+    fetch(`https://randomuser.me/api/?results=10&page=${page}`).
       then(response => response.json())
       .then(responseJson => {
-        this.setState({
-          randomUserData: this.state.page === 1 ? responseJson.results : [...this.state.randomUserData, ...responseJson.results]
-        })
+        setRandomUserData(page === 1 ? responseJson.results : [...randomUserData, ...responseJson.results])
       }).catch(error => {
         console.log('Error selecting random data: ' + error)
       })
   }
 
-  LoadMoreRandomData = () => {
-    this.setState({
-      page: this.state.page + 1
-    }, () => this.LoadRandomData())
+
+  const LoadMoreRandomData = () => {
+    setPage(page + 1)
+    LoadRandomData()
   }
 
-  renderCustomItem = ({ item, index }) => {
+
+
+  const renderCustomItem = ({ item, index }) => {
     return (
       <View style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text>{item.gender}</Text>
@@ -53,26 +51,38 @@ class App extends Component {
     )
   }
 
-  componentDidMount() {
-    this.LoadRandomData()
-  }
+  useEffect(() => {
+    LoadRandomData()
+  }, []);
 
-  keyExtractor = (item, index) => item.email;
+  useEffect(() => {
+  }, [page]);
 
-  render() {
-    return (
-      <View style={{ marginTop: 50 }}>
-        <FlatList
-          data={this.state.randomUserData}
-          renderItem={this.renderCustomItem}
-          style={{ width: 350, height: 800 }}
-          keyExtractor={this.keyExtractor}
-          onEndReachedThreshold={2}
-          onEndReached={this.LoadMoreRandomData}
-        />
-      </View>
-    )
-  }
-}
+
+  const keyExtractor = (item, index) => item.email;
+
+  return (
+    <View style={{ marginTop: 50 }}>
+      <FlatList
+        data={randomUserData}
+        renderItem={renderCustomItem}
+        style={{ width: 350, height: 800 }}
+        keyExtractor={keyExtractor}
+        onEndReachedThreshold={1}
+        onEndReached={LoadMoreRandomData}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#eef",
+    flexDirection: "column",
+  },
+
+});
+
 
 export default App;
